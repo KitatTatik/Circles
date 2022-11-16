@@ -9,56 +9,37 @@
 #define bool char
 #define true 1
 #define false 0
-#define maxn 10
+#define maxn 100
 #define WIN_CAPTION " - CURRENT BALLS"
-#define WIN_CAPTION2 "BEWARE OF THE BLACKHOLE"
-#define WIN_CAPTION3 "svobodu kadel'kam"
 
-int kd;
 
 //  STRUCTURES
 
 typedef struct {
-	double x;
-	double y;
-	double r;
-      } hole;
-
-typedef struct {	
-        SDL_Surface *image;
-        SDL_Texture *tex;
-        SDL_Rect     finxy; 
-        SDL_Rect     cutxy; 
-      //  const char  *filename;
-      } fin;	
-
-typedef struct {
-        double       ball_x;
-        double       ball_y;
-        double       speed_x;
-        double       speed_y;
-        double       rad;
+    double       ball_x;
+    double       ball_y;
+    double       speed_x;
+    double       speed_y;
+    double       rad;
 	double       mass;
 	double       cr;
 	double       cg;
 	double       cb;
-      } shar;
+    } shar;
 
 shar ball[maxn];
 
 typedef struct {
-        SDL_Window     *window;
-        SDL_Renderer   *rend;
-        SDL_Event       event;
-        double          deltat;
+    SDL_Window     *window;
+    SDL_Renderer   *rend;
+    SDL_Event       event;
+    double          deltat;
 	double          t0;
 	double          gy;
 	double          k_visc1;
 	double          k_visc2;
-        hole            trou;	
-	fin             fin;
-        shar            ball[maxn];
-      } Application;
+    shar            ball[maxn];
+    } Application;
 
 //   FUNCTIONS - DRAWING PREPARATION
 
@@ -101,83 +82,12 @@ int get_rend(Application* app) //render to rend into the window
     return 1;
 }
 
-int load_start(Application* app)  // loading starting meatballs
-{
-    app->fin.image = IMG_Load("start1.png");
-
-    if(!app->fin.image)
-    {
-        printf("Failed to load image \n");
-        printf("SDL2 Error: %s\n", SDL_GetError());
-        return 0;
-    }
-
-    app->fin.tex = SDL_CreateTextureFromSurface(app->rend,app->fin.image); 
-
-    if(!app->fin.tex)
-    {
-        printf("Failed to load texture \n");
-        printf("SDL2 Error: %s\n", SDL_GetError());
-        return 0;
-    }
-
-    app->fin.finxy.x = 0;
-    app->fin.finxy.y = 0;
-    app->fin.finxy.w = 680;
-    app->fin.finxy.h = 480;
-
-    app->fin.cutxy.x = 0;
-    app->fin.cutxy.y = 0;
-    app->fin.cutxy.w = 680;
-    app->fin.cutxy.h = 480;
-
-    SDL_FreeSurface(app->fin.image);
-    return(0);
-}
-
-int load_end(Application* app)  // loading final bunny
-{
-    app->fin.image = IMG_Load("end.png");
-
-    if(!app->fin.image)
-    {
-        printf("Failed to load image \n");
-        printf("SDL2 Error: %s\n", SDL_GetError());
-        return 0;
-    }
-
-    app->fin.tex = SDL_CreateTextureFromSurface(app->rend,app->fin.image); 
-
-    if(!app->fin.tex)
-    {
-        printf("Failed to load texture \n");
-        printf("SDL2 Error: %s\n", SDL_GetError());
-        return 0;
-    }
-
-    app->fin.finxy.x = 0;
-    app->fin.finxy.y = 0;
-    app->fin.finxy.w = 680;
-    app->fin.finxy.h = 480;
- 
-    app->fin.cutxy.x = 0;
-    app->fin.cutxy.y = 0;
-    app->fin.cutxy.w = 680;
-    app->fin.cutxy.h = 480;
-
-    SDL_FreeSurface(app->fin.image);
-    return(0);
-
-}
 
 int init_ball(Application* app,  int k) // balls parameters
 {
     double rk=0.0;
     srand(time(NULL));
 
- //   app->ball[k].ball_x = 250.0+30.0*k;
- //   app->ball[k].ball_y = 80.+30.0*k;
-    
     app->ball[k].speed_x = 1.0*(1.+2*k);
     app->ball[k].speed_y = 0.0;
     
@@ -198,36 +108,10 @@ void add_ball(Application* app,  int k, int x,int y)
     app->ball[k].ball_y = y;
 }
 
-void blackhole(Application* app, int x,int y)
-{
-    app->trou.x = x;
-    app->trou.y = y;
-    app->trou.r =30;
-    filledCircleRGBA(app->rend, app->trou.x, app->trou.y, app->trou.r,0,0,0,254);
-}
 
 
 //      FUNCTIONS - evolution description
 
-int absorption(Application* app, int k, int m, int kd)
-{
-    double x=app->ball[k].ball_x;
-    double y=app->ball[k].ball_y;
-    double r=app->ball[k].rad;
-    double xm=app->trou.x;
-    double ym=app->trou.y;
-    double rt=app->trou.r;
-    double dist;
-    
-    dist=(xm-x)*(xm-x)+(ym-y)*(ym-y);
-    if (dist < (rt+r/2)*(rt+r/2))
-    { 
-        app->ball[k].ball_x =-1000;
-        app->ball[k].ball_y =-1000;
-        kd=k;
-    }
-    return(kd);
-}	
 
 void border(Application* app, int k)   //  reflections from the borders
 {
@@ -235,7 +119,6 @@ void border(Application* app, int k)   //  reflections from the borders
     double r;
     double x,y,vx,vy;
     double mod,spot; // spot - ne pro speed, a pro overlap
-
     double a0 = 678.0; // borders' actual screen postions
     double c0 = 2.0;
     double b0 = 478.0;
@@ -254,28 +137,28 @@ void border(Application* app, int k)   //  reflections from the borders
     
     if(a > a0)
     {
-        mod=abs(vx);
+        mod=fabs(vx);
         spot=(a-a0);
         if (vx>0.)vx=-vx;
         x=x+vx*spot/mod;
     }
     if(c < c0)
     {
-        mod=abs(vx);
+        mod=fabs(vx);
         spot=(c0-c);
         if (vx<0.)vx=-vx;
         x=x+vx*spot/mod;
     }
     if(b >b0) 
     {
-        mod=abs(vy);
+        mod=fabs(vy);
         spot=(b-b0);
         if (vy>0.)vy=-vy;
         y=y+vy*spot/mod;
     }
     if(d < d0) 
     {
-        mod=abs(vy);
+        mod=fabs(vy);
         spot=(d0-d);
         if (vy<0.)vy=-vy;
         y=y+vy*spot/mod;
@@ -350,8 +233,8 @@ void collision(Application* app,  int i, int j) //handles balls' collision
         spxi=((mi-mj)*spxi+2.0*mj*spxj)/(mi+mj);
         spxj= spxi+sptot;
 
-        mod=abs(spxi)+abs(spxj);  //avoided crossing
-        spot=(ri+rj)-abs(dx);
+        mod=fabs(spxi)+fabs(spxj);  //avoided crossing
+        spot=(ri+rj)-fabs(dx);
         xi=xi+spxi*spot/mod;
         xj=xj+spxj*spot/mod;
 
@@ -405,11 +288,9 @@ void shift(Application* app, int i)  // provides dynamics
 
 
 void draw(Application* app, int i)  // rendering the i-th ball (render, i-th texture, i-th texture spot, i-th current coords
-{   if(i!=kd)
     {
        filledCircleRGBA(app->rend, app->ball[i].ball_x, app->ball[i].ball_y, app->ball[i].rad, app->ball[i].cr, app->ball[i].cg, app->ball[i].cb,254);
     }
-}    
 
 
 //      FUNCTIONS - FINALIZING
@@ -431,12 +312,10 @@ int main(int argc, char *argv[])
 {
     Application *app = (Application*) malloc(sizeof(Application));
     
-    kd=100;
     int m=0; 
     int l=0;	  
     int j=0;
     int i;
-    int destroy=0;
     int xadd,yadd;
 
     char wname[50];
@@ -447,34 +326,17 @@ int main(int argc, char *argv[])
     init_window(app);
     get_rend(app);
 
-    app->deltat=1.0/60.0;         // time step (60c^-1)
-    app->gy =2.0;                 // gravitation acceleration
+    app->deltat=0.04;         // time step (60c^-1)
+    app->gy =50.0;                 // gravitation acceleration
     app->k_visc1 = 0.00;         // linear visc.
     app->k_visc2 = 0.00;	  // squaric visc.
     
-    bool keep_window_open = true;
-    while(keep_window_open)
-    {
-        while(SDL_PollEvent(&(app->event)) > 0) // app->event <==> (*app).event
-        {
-            switch(app->event.type)
-            {
-                case SDL_MOUSEBUTTONDOWN:
-                keep_window_open = false;
-                break;
-            }
-	}
-        load_start(app);
-        SDL_RenderCopy(app->rend, app->fin.tex, &app->fin.cutxy, &app->fin.finxy);
-        SDL_RenderPresent(app->rend);
-      //  usleep(100);
-    }	
     SDL_RenderClear(app->rend);
     for (l=0;l<m;l++)
         {
             init_ball(app,l);
         }
-    keep_window_open = true;
+    bool keep_window_open = true;
     while(keep_window_open)
     {
         while(SDL_PollEvent(&(app->event)) > 0) // app->event <==> (*app).event
@@ -493,11 +355,6 @@ int main(int argc, char *argv[])
 		          m++;
 		      }
 		      else
-		      {
-		          destroy++;
-                         // blackhole(app,xadd,yadd);
-		         // printf("ENOUGHT %d\t %d\t%d\n", destroy, xadd, yadd);
-	              }	      
 		      break;
 
                  case SDL_KEYDOWN:                         // keybord event
@@ -505,82 +362,37 @@ int main(int argc, char *argv[])
                          {
                              case SDLK_UP:                      // arrow up g grows
                                  app->gy += 0.1;
-		                 printf("G increased is %f\n", app->gy);	      
-				 break;
+		                         printf("G increased is %f\n", app->gy);	      
+				             break;
                              case SDLK_DOWN:                    // and vice versa
                                  app->gy -=0.1;
-		                 printf("G decreased is %f\n", app->gy);	      
-				 break;
+		                         printf("G decreased is %f\n", app->gy);	      
+				             break;
                              default:
-                                 break;
-			 }
+                             break;
+			              }
 
             }       
         }
-            usleep(25); // just for smoothness
-            if(m<10)
-	        {	    
-	          sprintf(wname, "%d", m);
-                  winname=strcat(wname, WIN_CAPTION);
-	        }
-	else winname=WIN_CAPTION2;
-        SDL_SetWindowTitle(app->window, winname); 
 	SDL_SetRenderDrawColor(app->rend,97,205,207,1);
-        SDL_RenderClear(app->rend);
-//            printf(" DEBUG ERASING %d\t%d\t%d\n",kd,m,destroy);	    
-        if(l!=kd)
-        {	
-           for (l=0;l<m;l++)
-           {
-               draw(app, l);
-           } 
-           for (l=0;l<m;l++)
-           {   
-               border(app,  l);
-               for(j=0;j<l;j++)
-               {  
-                   collision(app, l,j);
-               }
-               if(destroy>0)
-	           {		
-                       blackhole(app,xadd,yadd);      
-                       kd=absorption(app,l,m,kd);
-		   }
-	       shift(app,l);
-            }
-          }      
-         SDL_RenderPresent(app->rend);
-         if (destroy>0 && kd < 15)
-         {	    
-             for (i = kd; i < m; ++i)
-             {
-                 app->ball[i] = app->ball[i + 1];
-             }
-             --m;
-             kd=100;
-          }
-    if ((destroy>0) && m<1) keep_window_open = false;
-  }
     SDL_RenderClear(app->rend);
-    winname=WIN_CAPTION3;
-    SDL_SetWindowTitle(app->window, winname);
+//            printf(" DEBUG ERASING %d\t%d\t%d\n",kd,m,destroy);	    
+    for (l=0;l<m;l++)
+        {
+            draw(app, l);
+        } 
+        for (l=0;l<m;l++)
+            {   
+                border(app,  l);
+                for(j=0;j<l;j++)
+                {  
+                    collision(app, l,j);
+                }
+	        shift(app,l);
+            }
+    SDL_RenderPresent(app->rend);
+    SDL_RenderClear(app->rend);
 
-    keep_window_open = true;
-    while(keep_window_open)
-       {
-           while(SDL_PollEvent(&(app->event)) > 0) // app->event <==> (*app).event
-           {
-               switch(app->event.type)
-               {
-                    case SDL_MOUSEBUTTONDOWN:
-                    keep_window_open = false;
-                    break;
-               } 
-           }
-           load_end(app);
-           SDL_RenderCopy(app->rend, app->fin.tex, &app->fin.cutxy, &app->fin.finxy);
-           SDL_RenderPresent(app->rend);
-        //   usleep(100);
     }
     finish(app);
 }
